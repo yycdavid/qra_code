@@ -1,0 +1,1 @@
+python2 main.py --run_dir result/ --model lstm --train data/askubuntu/train --eval data/android/ --bidir --d 100 --embedding word_vectors/glove.npz --max_epoch 50 --use_content --eval_use_content --criterion cosine

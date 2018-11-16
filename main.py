@@ -4,6 +4,7 @@ import os
 import argparse
 import time
 import random
+import datetime
 
 import numpy as np
 import torch
@@ -12,6 +13,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from tensorboard import summary
 from tensorboard import FileWriter
+from tqdm import tqdm
 
 from model_factory import get_model_class
 from utils import Corpus, EmbeddingLayer, FileLoader, RandomLoader, CombinedLoader
@@ -55,9 +57,10 @@ def train(iter_cnt, model, corpus, args, optimizer):
     tot_loss = 0.0
     tot_cnt = 0
 
-    for batch, labels in pad_iter(corpus, embedding_layer, pos_batch_loader,
-                neg_batch_loader, use_content, pad_left=False):
+    for batch, labels in tqdm(pad_iter(corpus, embedding_layer, pos_batch_loader,
+                neg_batch_loader, use_content, pad_left=False)):
         iter_cnt += 1
+        print(iter_cnt)
         model.zero_grad()
         labels = labels.type(torch.LongTensor)
         new_batch = [ ]
@@ -122,8 +125,8 @@ def evaluate(iter_cnt, filepath, model, corpus, args, logging=True):
     criterion = model.compute_loss
     auc_meter = AUCMeter()
     scores = [ np.asarray([], dtype='float32') for i in range(2) ]
-    for loader_id, loader in enumerate((neg_batch_loader, pos_batch_loader)):
-        for data in loader:
+    for loader_id, loader in tqdm(enumerate((neg_batch_loader, pos_batch_loader))):
+        for data in tqdm(loader):
             data = map(corpus.get, data)
             batch = None
             if not args.eval_use_content:
@@ -207,7 +210,7 @@ def main(args):
     args = argparser.parse_args()
     say(args)
 
-    args.run_id = random.randint(0,10**9)
+    args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     args.run_path = "{}/{}".format(args.run_dir, args.run_id)
     #if not os.path.exists(args.run_dir):
     #    os.makedirs(args.run_dir)
@@ -293,4 +296,9 @@ if __name__ == "__main__":
     argparser.add_argument("--save_model", type=str, required=False, help="location to save model")
 
     args, _  = argparser.parse_known_args()
-    main(args)
+    try:
+        main(args)
+    except Exception as err:
+        print(err)
+        import pdb
+        pdb.post_mortem()

@@ -1,0 +1,6 @@
+*.pyc
+data/
+tmp/
+result/
+result-adv/
+word_vectors/

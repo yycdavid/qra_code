@@ -4,6 +4,7 @@ import os
 import argparse
 import time
 import random
+import datetime
 
 import numpy as np
 import torch
@@ -12,6 +13,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from tensorboard import summary
 from tensorboard import FileWriter
+from tqdm import tqdm
 
 from model_factory import get_model_class
 from model_factory.domain_discriminator import ClassificationD, WassersteinD
@@ -60,8 +62,8 @@ def train(iter_cnt, model, domain_d, corpus, args, optimizer_encoder, optimizer_
     total_loss = 0.0
     total_cnt = 0
 
-    for batch, labels, domain_batch, domain_labels in cross_pad_iter(corpus, embedding_layer, pos_batch_loader,
-                neg_batch_loader, cross_loader, use_content, pad_left=False):
+    for batch, labels, domain_batch, domain_labels in tqdm(cross_pad_iter(corpus, embedding_layer, pos_batch_loader,
+                neg_batch_loader, cross_loader, use_content, pad_left=False)):
         iter_cnt += 1
 
         new_batch = [ ]
@@ -154,7 +156,7 @@ def evaluate(iter_cnt, filepath, model, corpus, args, logging=True):
     criterion = model.compute_loss
     auc_meter = AUCMeter()
     scores = [ np.asarray([], dtype='float32') for i in range(2) ]
-    for loader_id, loader in enumerate((neg_batch_loader, pos_batch_loader)):
+    for loader_id, loader in tqdm(enumerate((neg_batch_loader, pos_batch_loader))):
         for data in loader:
             data = map(corpus.get, data)
             batch = None
@@ -240,7 +242,7 @@ def main(args):
     args, _ = argparser.parse_known_args()
     say(args)
 
-    args.run_id = random.randint(0,10**9)
+    args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     args.run_path = "{}/{}".format(args.run_dir, args.run_id)
     #if not os.path.exists(args.run_dir):
     #    os.makedirs(args.run_dir)

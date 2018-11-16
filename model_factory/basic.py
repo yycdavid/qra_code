@@ -25,9 +25,9 @@ def indent(text, amount, ch=' '):
 def normalize_2d(x, eps=1e-8):
     assert x.dim() == 2
     l2 = x.norm(2,1)
-    print l2.data.size()
+    '''print l2.data.size()
     print x.data.size()
-    print (l2+eps).expand_as(x).data.size()
+    print (l2+eps).expand_as(x).data.size()'''
     return x/((l2+eps).expand_as(x))
 
 def cosine_similarity(u, v):
