@@ -60,7 +60,6 @@ def train(iter_cnt, model, corpus, args, optimizer):
     for batch, labels in tqdm(pad_iter(corpus, embedding_layer, pos_batch_loader,
                 neg_batch_loader, use_content, pad_left=False)):
         iter_cnt += 1
-        print(iter_cnt)
         model.zero_grad()
         labels = labels.type(torch.LongTensor)
         new_batch = [ ]
