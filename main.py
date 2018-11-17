@@ -213,6 +213,8 @@ def main(args):
     args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     root_dir = os.path.dirname(os.path.realpath(__file__))
     args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
+    if not os.path.exists(args.run_path):
+        os.makedirs(args.run_path)
 
     global outputManager
     outputManager = OutputManager(args.run_path)
