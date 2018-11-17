@@ -2,6 +2,7 @@
 import sys
 import gzip
 import random
+import os
 
 import numpy as np
 import torch
@@ -210,6 +211,17 @@ def cross_pad_iter_embs(corpus, emblayer1, emblayer2, positive_iter, negative_it
             domain_input2 = map(batchify2, domain_input2)
 
         yield (input_left, input_right), torch.LongTensor(task_labels), (domain_input1, domain_input2), (torch.LongTensor(domain_labels1), torch.LongTensor(domain_labels2))
+
+class OutputManager(object):
+    def __init__(self, result_path):
+        self.log_file = open(os.path.join(result_path,'log.txt'),'w')
+
+    def say(s):
+        self.log_file.write("{}".format(s))
+        self.log_file.flush()
+        sys.stdout.write("{}".format(s))
+        sys.stdout.flush()
+
 
 class FileLoader(object):
     def __init__(self, file_paths, batch_size, shuffle=True):

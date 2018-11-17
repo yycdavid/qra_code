@@ -16,9 +16,11 @@ from tensorboard import FileWriter
 from tqdm import tqdm
 
 from model_factory import get_model_class
-from utils import Corpus, EmbeddingLayer, FileLoader, RandomLoader, CombinedLoader
+from utils import Corpus, EmbeddingLayer, FileLoader, RandomLoader, CombinedLoader, OutputManager
 from utils import say, load_embedding, pad_iter, make_batch
 from utils.meter import AUCMeter
+
+outputManager = 0
 
 def train(iter_cnt, model, corpus, args, optimizer):
 
@@ -88,15 +90,15 @@ def train(iter_cnt, model, corpus, args, optimizer):
         tot_loss += loss.data[0]*output.size(0)
         tot_cnt += output.size(0)
         if iter_cnt % 100 == 0:
-            say("\r" + " "*50)
-            say("\r{} loss: {:.4f}  eps: {:.0f} ".format(
+            outputManager.say("\r" + " "*50)
+            outputManager.say("\r{} loss: {:.4f}  eps: {:.0f} ".format(
                 iter_cnt, tot_loss / tot_cnt,
                 tot_cnt/(time.time()-start)
             ))
             s = summary.scalar('loss', tot_loss/tot_cnt)
             train_writer.add_summary(s, iter_cnt)
 
-    say("\n")
+    outputManager.say("\n")
     train_writer.close()
     #if model.criterion.startswith('classification'):
     #    print model.output_op.weight.min().data[0], model.output_op.weight.max().data[0]
@@ -174,7 +176,7 @@ def evaluate(iter_cnt, filepath, model, corpus, args, logging=True):
         avg_score = (scores[1].mean()+scores[0].mean())*0.5
     else:
         avg_score = scores[1].mean()-scores[0].mean()
-    say("\r[{}] auc(.01): {:.3f}  auc(.02): {:.3f}  auc(.05): {:.3f}"
+    outputManager.say("\r[{}] auc(.01): {:.3f}  auc(.02): {:.3f}  auc(.05): {:.3f}"
             "  auc(.1): {:.3f}  auc: {:.3f}"
             "  scores: {:.2f} ({:.2f} {:.2f})\n".format(
         os.path.basename(filepath).split('.')[0],
@@ -207,16 +209,22 @@ def main(args):
     model_class = get_model_class(args.model)
     model_class.add_config(argparser)
     args = argparser.parse_args()
-    say(args)
 
     args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     args.run_path = "{}/{}".format(args.run_dir, args.run_id)
+
+    global outputManager
+    outputManager = OutputManager(args.run_path)
+
+    outputManager.say(args)
+
+    
     #if not os.path.exists(args.run_dir):
     #    os.makedirs(args.run_dir)
     #assert os.path.isdir(args.run_dir)
     #assert not os.path.exists(args.run_path)
     #os.makedirs(args.run_path)
-    say("\nRun ID: {}\nRun Path: {}\n\n".format(
+    outputManager.say("\nRun ID: {}\nRun Path: {}\n\n".format(
         args.run_id,
         args.run_path
     ))
@@ -226,7 +234,7 @@ def main(args):
     train_corpus = Corpus([ tuple([train_corpus_path, os.path.dirname(args.train)]) ])
     valid_corpus_path = os.path.dirname(args.eval) + "/corpus.tsv.gz"
     valid_corpus = Corpus([ tuple([valid_corpus_path, os.path.dirname(args.eval)]) ])
-    say("Corpus loaded.\n")
+    outputManager.say("Corpus loaded.\n")
 
     embs = load_embedding(args.embedding) if args.embedding else None
 
@@ -241,9 +249,9 @@ def main(args):
 
     if args.cuda:
         model.cuda()
-    say("\n{}\n\n".format(model))
+    outputManager.say("\n{}\n\n".format(model))
 
-    print model.state_dict().keys()
+    outputManager.say(model.state_dict().keys())
 
     needs_grad = lambda x: x.requires_grad
     optimizer = optim.Adam(
@@ -252,11 +260,11 @@ def main(args):
     )
 
     if args.load_model:
-        print "Loading pretrained model"
+        outputManager.say("Loading pretrained model")
         model.load_state_dict(torch.load(args.load_model))
 
     else:
-        print "Training will begin from scratch"
+        outputManager.say("Training will begin from scratch")
  
 
     best_dev = 0
@@ -271,7 +279,7 @@ def main(args):
         if current_dev > best_dev:
             best_dev = current_dev
             evaluate(iter_cnt, args.eval+"/test", model, valid_corpus, args, False)
-        say("\n")
+        outputManager.say("\n")
 
     if args.save_model:
         torch.save(model.state_dict(), args.save_model) 
