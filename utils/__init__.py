@@ -216,7 +216,7 @@ class OutputManager(object):
     def __init__(self, result_path):
         self.log_file = open(os.path.join(result_path,'log.txt'),'w')
 
-    def say(s):
+    def say(self, s):
         self.log_file.write("{}".format(s))
         self.log_file.flush()
         sys.stdout.write("{}".format(s))
