@@ -17,9 +17,12 @@ from tqdm import tqdm
 
 from model_factory import get_model_class
 from model_factory.domain_discriminator import ClassificationD, WassersteinD
-from utils import Corpus, EmbeddingLayer, FileLoader, TwoDomainLoader
+from utils import Corpus, EmbeddingLayer, FileLoader, TwoDomainLoader, OutputManager
 from utils import say, load_embedding, pad_iter, make_batch, cross_pad_iter
 from utils.meter import AUCMeter
+
+outputManager = 0
+
 
 def train(iter_cnt, model, domain_d, corpus, args, optimizer_encoder, optimizer_domain_d):
 
@@ -123,15 +126,15 @@ def train(iter_cnt, model, domain_d, corpus, args, optimizer_encoder, optimizer_
         optimizer_domain_d.step()
 
         if iter_cnt % 100 == 0:
-            say("\r" + " "*50)
-            say("\r{} tot_loss: {:.4f} task_loss: {:.4f} domain_loss: {:.4f} eps: {:.0f} ".format(
+            outputManager.say("\r" + " "*50)
+            outputManager.say("\r{} tot_loss: {:.4f} task_loss: {:.4f} domain_loss: {:.4f} eps: {:.0f} ".format(
                 iter_cnt, total_loss/total_cnt, task_loss / task_cnt, domain_loss / dom_cnt,
                 (task_cnt + dom_cnt)/(time.time()-start)
             ))
             s = summary.scalar('loss', total_loss/total_cnt)
             train_writer.add_summary(s, iter_cnt)
 
-    say("\n")
+    outputManager.say("\n")
     train_writer.close()
 
     return iter_cnt
@@ -206,7 +209,7 @@ def evaluate(iter_cnt, filepath, model, corpus, args, logging=True):
         avg_score = (scores[1].mean()+scores[0].mean())*0.5
     else:
         avg_score = scores[1].mean()-scores[0].mean()
-    say("\r[{}] auc(.01): {:.3f}  auc(.02): {:.3f}  auc(.05): {:.3f}"
+    outputManager.say("\r[{}] auc(.01): {:.3f}  auc(.02): {:.3f}  auc(.05): {:.3f}"
             "  auc(.1): {:.3f}  auc: {:.3f}"
             "  scores: {:.2f} ({:.2f} {:.2f})\n".format(
         os.path.basename(filepath).split('.')[0],
@@ -240,16 +243,21 @@ def main(args):
     model_class.add_config(argparser)
     ClassificationD.add_config(argparser)
     args, _ = argparser.parse_known_args()
-    say(args)
 
     args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    args.run_path = "{}/{}".format(args.run_dir, args.run_id)
-    #if not os.path.exists(args.run_dir):
-    #    os.makedirs(args.run_dir)
-    #assert os.path.isdir(args.run_dir)
-    #assert not os.path.exists(args.run_path)
-    #os.makedirs(args.run_path)
-    say("\nRun ID: {}\nRun Path: {}\n\n".format(
+    root_dir = os.path.dirname(os.path.realpath(__file__))
+    args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
+    if not os.path.exists(args.run_path):
+        os.makedirs(args.run_path)
+
+    global outputManager
+    outputManager = OutputManager(args.run_path)
+
+
+    outputManager.say(args)
+
+    
+    outputManager.say("\nRun ID: {}\nRun Path: {}\n\n".format(
         args.run_id,
         args.run_path
     ))
@@ -260,7 +268,7 @@ def main(args):
     train_corpus = Corpus([ tuple([train_corpus_path,os.path.dirname(args.train)]), tuple([cross_train_corpus_path,os.path.dirname(args.cross_train)]) ])
     valid_corpus_path = os.path.dirname(args.eval) + "/corpus.tsv.gz"
     valid_corpus = Corpus([ tuple([valid_corpus_path,os.path.dirname(args.eval)]) ])
-    say("Corpus loaded.\n")
+    outputManager.say("Corpus loaded.\n")
 
     embs = load_embedding(args.embedding) if args.embedding else None
 
@@ -287,8 +295,8 @@ def main(args):
     if args.cuda:
         model.cuda()
         domain_d.cuda()
-    say("\n{}\n\n".format(model))
-    say("\n{}\n\n".format(domain_d))
+    outputManager.say("\n{}\n\n".format(model))
+    outputManager.say("\n{}\n\n".format(domain_d))
 
     needs_grad = lambda x: x.requires_grad
 
@@ -309,7 +317,7 @@ def main(args):
         if current_dev > best_dev:
             best_dev = current_dev
             evaluate(iter_cnt, args.eval+"/test", model, valid_corpus, args, False)
-        say("\n")
+        outputManager.say("\n")
 
     if args.save_model:
         torch.save(model.state_dict(), args.save_model) 
