@@ -211,7 +211,8 @@ def main(args):
     args = argparser.parse_args()
 
     args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    args.run_path = "{}/{}".format(args.run_dir, args.run_id)
+    root_dir = os.path.dirname(os.path.realpath(__file__))
+    args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
 
     global outputManager
     outputManager = OutputManager(args.run_path)
