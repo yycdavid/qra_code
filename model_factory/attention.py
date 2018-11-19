@@ -15,6 +15,8 @@ class ATTENTION(ModelBase):
     @staticmethod
     def add_config(cfgparser):
         super(ATTENTION, ATTENTION).add_config(cfgparser)
+        cfgparser.add_argument("--n_d", "--d", type=int, help="embedding dimension")
+
 
     def __init__(self, embedding_layer, configs):
         super(ATTENTION, self).__init__(configs)
