@@ -41,7 +41,9 @@ class ATTENTION(ModelBase):
         emb = Variable(emb.data)
         assert emb.dim() == 3
 
-        s_out = self.s(emb) # (len, batch_size, 1)
+        emb_resized = emb.view(-1, self.n_e)
+        s_out_resized = self.s(emb_resized) # (len, batch_size, 1)
+        s_out = s_out_resized.view(emb.size()[0], emb.size()[1])
 
         # get mask
         padid = self.embedding_layer.padid
