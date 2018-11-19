@@ -2,10 +2,12 @@
 
 from .dan import DAN
 from .lstm import LSTM
+from .attention import ATTENTION
 
 MODEL_CLASS = {
     'dan': DAN,
-    'lstm' : LSTM
+    'lstm' : LSTM,
+    'attention' : ATTENTION
 }
 
 def get_model_class(model_name):
