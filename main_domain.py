@@ -131,7 +131,12 @@ def train(iter_cnt, model, domain_d, corpus, args, optimizer_encoder, optimizer_
                 iter_cnt, total_loss/total_cnt, task_loss / task_cnt, domain_loss / dom_cnt,
                 (task_cnt + dom_cnt)/(time.time()-start)
             ))
-            s = summary.scalar('loss', total_loss/total_cnt)
+
+            s = summary.scalar('total_loss', total_loss/total_cnt)
+            train_writer.add_summary(s, iter_cnt)
+            s = summary.scalar('domain_loss', domain_loss/dom_cnt)
+            train_writer.add_summary(s, iter_cnt)
+            s = summary.scalar('task_loss', task_loss/task_cnt)
             train_writer.add_summary(s, iter_cnt)
 
     outputManager.say("\n")
