@@ -42,8 +42,8 @@ class ATTENTION(ModelBase):
         assert emb.dim() == 3
 
         emb_resized = emb.view(-1, self.n_e)
-        s_out_resized = self.s(emb_resized) # (len, batch_size, 1)
-        s_out = s_out_resized.view(emb.size()[0], emb.size()[1])
+        s_out = self.s(emb_resized)
+        s_out = s_out.view(emb.size()[0], emb.size()[1]) # (len, batch_size)
 
         # get mask
         padid = self.embedding_layer.padid
@@ -51,10 +51,10 @@ class ATTENTION(ModelBase):
         if self.use_cuda:
             mask = mask.cuda()
         # Compute sequence embedding
-        s_out_t = torch.transpose(s_out, 0, 1).squeeze(2) # (batch_size, len)
+        s_out = torch.transpose(s_out, 0, 1) # (batch_size, len)
         mask_t = torch.transpose(mask, 0, 1) # (batch_size, len)
         mask_n = Variable(1-mask_t.data)
-        a = F.softmax(s_out_t.masked_fill_(mask_n, float('-inf'))) # (batch_size, len)
+        a = F.softmax(s_out.masked_fill_(mask_n, float('-inf'))) # (batch_size, len)
         output = torch.bmm(a.unsqueeze(1), torch.transpose(emb,0,1)).squeeze(1) # (batch_size, n_out)
 
         return output
