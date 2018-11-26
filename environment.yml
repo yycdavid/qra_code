@@ -1,0 +1,10 @@
+name: qra-env
+channels:
+  - soumith
+  - defaults
+dependencies:
+  - pytorch=0.1.11
+  - pillow==5.3.0
+  - tensorboard==1.12.0
+  - pip:
+    - tensorboard-pytorch==0.7.1

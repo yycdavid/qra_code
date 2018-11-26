@@ -241,7 +241,8 @@ def main(args):
     say(args)
 
     args.run_id = random.randint(0,10**9)
-    args.run_path = "{}/{}".format(args.run_dir, args.run_id)
+    if args.run_path is None:
+        args.run_path = "{}/{}".format(args.run_dir, args.run_id)
     #if not os.path.exists(args.run_dir):
     #    os.makedirs(args.run_dir)
     #assert os.path.isdir(args.run_dir)
@@ -310,13 +311,14 @@ def main(args):
         say("\n")
 
     if args.save_model:
-        torch.save(model.state_dict(), args.save_model) 
+        torch.save(model.state_dict(), args.save_model)
 
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(sys.argv[0], conflict_handler='resolve')
     argparser.add_argument("--cuda", action="store_true")
     argparser.add_argument("--run_dir",  type=str, default="/D/home/tao/mnt/ASAPPNAS/tao/test")
+    argparser.add_argument("--run_path", type=str, default=None)
     argparser.add_argument("--model", type=str, required=True, help="which model class to use")
     argparser.add_argument("--embedding", "--emb", type=str, help="path of embedding")
     argparser.add_argument("--train", type=str, required=True, help="training file")

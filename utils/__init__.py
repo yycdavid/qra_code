@@ -31,7 +31,7 @@ def say(s, stream=sys.stdout):
 
 def load_embedding_npz(path):
     data = np.load(path)
-    return [ str(w) for w in data['words'] ], data['vals']
+    return data['words'], data['vals']
 
 def load_embedding_txt(path):
     file_open = gzip.open if path.endswith(".gz") else open
@@ -161,7 +161,7 @@ def cross_pad_iter_self(corpus, combined_corpus, emblayer, positive_iter, negati
         if not use_content:
             domain_input_invariant = batchify(domain_input_invariant[0])
         else:
-            domain_input_invariant = map(batchify, domain_input_invariant) 
+            domain_input_invariant = map(batchify, domain_input_invariant)
 
         yield (input_left, input_right), torch.LongTensor(task_labels), (domain_input), (domain_input_invariant), torch.LongTensor(domain_labels)
 
@@ -176,7 +176,7 @@ def domain_classification_iter(corpus, emblayer, cross_iter, use_content=False, 
         else:
             domain_input = map(batchify, domain_input)
 
-        yield (domain_input), torch.LongTensor(domain_labels) 
+        yield (domain_input), torch.LongTensor(domain_labels)
 
 
 def cross_pad_iter_embs(corpus, emblayer1, emblayer2, positive_iter, negative_iter, cross_iter, use_content=False, pad_left=False):
@@ -433,7 +433,7 @@ class CorpusCombined(object):
                     modified_content.append(b)
                 else:
                     modified_content.append("DARSH")
-            self.data_content[id] = modified_content 
+            self.data_content[id] = modified_content
 
     def get(self, uids):
         return self.get_title(uids), self.get_content(uids)
