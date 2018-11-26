@@ -266,7 +266,7 @@ def main(args):
         filter(needs_grad, model.parameters()),
         lr = args.lr
     )
-    print(filter(needs_grad, model.parameters()))
+    outputManager.say(optimizer.state_dict())
 
     if args.load_model:
         outputManager.say("Loading pretrained model")
