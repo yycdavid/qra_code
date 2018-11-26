@@ -87,7 +87,11 @@ def train(iter_cnt, model, corpus, args, optimizer):
         output = model.compute_similarity(repr_left, repr_right)
         loss = criterion(output, labels)
         loss.backward()
+        prev_emb = embedding_layer.embedding.weight.cpu().data.numpy()
         optimizer.step()
+        current_emb = embedding_layer.embedding.weight.cpu().data.numpy()
+        diff = np.sum(np.absolute(current_emb-prev_emb))
+        pdb.set_trace()
         tot_loss += loss.data[0]*output.size(0)
         tot_cnt += output.size(0)
         if iter_cnt % 100 == 0:
@@ -263,7 +267,6 @@ def main(args):
         lr = args.lr
     )
     print(filter(needs_grad, model.parameters()))
-    pdb.set_trace()
 
     if args.load_model:
         outputManager.say("Loading pretrained model")
