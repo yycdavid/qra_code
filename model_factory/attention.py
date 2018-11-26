@@ -17,14 +17,14 @@ class ATTENTION(ModelBase):
     def add_config(cfgparser):
         super(ATTENTION, ATTENTION).add_config(cfgparser)
         cfgparser.add_argument("--n_d", "--d", type=int, help="embedding dimension")
-	cfgparser.add_argument("--freeze_embedding", action="store_true")
+        cfgparser.add_argument("--freeze_embedding", action="store_true")
 
     def __init__(self, embedding_layer, configs):
         super(ATTENTION, self).__init__(configs)
         self.embedding_layer = embedding_layer
-	if configs.freeze_embedding:
-	    print("Not tuning embeeddings")
-	else:
+        if configs.freeze_embedding:
+            print("Not tuning embeeddings")
+        else:
             self.embedding_layer.embedding.weight.requires_grad = True
         self.embedding = self.embedding_layer.embedding
         self.n_e = embedding_layer.n_d

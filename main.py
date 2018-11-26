@@ -5,6 +5,7 @@ import argparse
 import time
 import random
 import datetime
+import pdb
 
 import numpy as np
 import torch
@@ -261,6 +262,8 @@ def main(args):
         filter(needs_grad, model.parameters()),
         lr = args.lr
     )
+    print(filter(needs_grad, model.parameters()))
+    pdb.set_trace()
 
     if args.load_model:
         outputManager.say("Loading pretrained model")
