@@ -87,6 +87,7 @@ def train(iter_cnt, model, corpus, args, optimizer):
         output = model.compute_similarity(repr_left, repr_right)
         loss = criterion(output, labels)
         loss.backward()
+        pdb.set_trace()
         optimizer.step()
         tot_loss += loss.data[0]*output.size(0)
         tot_cnt += output.size(0)
@@ -262,8 +263,7 @@ def main(args):
         filter(needs_grad, model.parameters()),
         lr = args.lr
     )
-    print(filter(needs_grad, model.parameters()))
-    pdb.set_trace()
+    outputManager.say(optimizer.state_dict())
 
     if args.load_model:
         outputManager.say("Loading pretrained model")

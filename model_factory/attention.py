@@ -25,6 +25,7 @@ class ATTENTION(ModelBase):
         if configs.freeze_embedding:
             print("Not tuning embeeddings")
         else:
+            print("Tuning embeddings")
             self.embedding_layer.embedding.weight.requires_grad = True
         self.embedding = self.embedding_layer.embedding
         self.n_e = embedding_layer.n_d
