@@ -91,7 +91,6 @@ def train(iter_cnt, model, corpus, args, optimizer):
         optimizer.step()
         current_emb = embedding_layer.embedding.weight.cpu().data.numpy()
         diff = np.sum(np.absolute(current_emb-prev_emb))
-        pdb.set_trace()
         tot_loss += loss.data[0]*output.size(0)
         tot_cnt += output.size(0)
         if iter_cnt % 100 == 0:
