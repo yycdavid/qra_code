@@ -328,7 +328,7 @@ def main(args):
 
     if args.save_model:
         torch.save(model.state_dict(), args.save_model)
-
+        torch.save(model, args.save_model + '-complete')
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(sys.argv[0], conflict_handler='resolve')
