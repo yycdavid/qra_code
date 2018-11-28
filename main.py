@@ -217,7 +217,9 @@ def main(args):
 
     args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     root_dir = os.path.dirname(os.path.realpath(__file__))
-    args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
+    # only use generated run_path if none provided by user
+    if args.run_path is None:
+        args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
     if not os.path.exists(args.run_path):
         os.makedirs(args.run_path)
 
@@ -226,7 +228,7 @@ def main(args):
 
     outputManager.say(args)
 
-    
+
     #if not os.path.exists(args.run_dir):
     #    os.makedirs(args.run_dir)
     #assert os.path.isdir(args.run_dir)
@@ -274,7 +276,6 @@ def main(args):
 
     else:
         outputManager.say("Training will begin from scratch")
- 
 
     best_dev = 0
     iter_cnt = 0
@@ -291,13 +292,14 @@ def main(args):
         outputManager.say("\n")
 
     if args.save_model:
-        torch.save(model.state_dict(), args.save_model) 
+        torch.save(model.state_dict(), args.save_model)
 
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(sys.argv[0], conflict_handler='resolve')
     argparser.add_argument("--cuda", action="store_true")
     argparser.add_argument("--run_dir",  type=str, default="/D/home/tao/mnt/ASAPPNAS/tao/test")
+    argparser.add_argument("--run_path", type=str, default=None)
     argparser.add_argument("--model", type=str, required=True, help="which model class to use")
     argparser.add_argument("--embedding", "--emb", type=str, help="path of embedding")
     argparser.add_argument("--train", type=str, required=True, help="training file")
