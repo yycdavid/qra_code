@@ -5,6 +5,8 @@ import os
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import torch
+from torch.autograd import Variable
+import tqdm
 
 from utils import Corpus, FileLoader, make_batch
 
@@ -36,8 +38,8 @@ def evaluate(
         batch_size=100,
 ):
 
-    model = torch.load(model_path, map_location="cpu")
-    model = model.cpu()
+    model = torch.load(model_path)
+    model = model.cuda()
     model.eval()
 
     corpus = Corpus([tuple([corpus_path, os.path.dirname(corpus_path)])])
@@ -48,19 +50,21 @@ def evaluate(
     code = []
     nl = []
 
-    for data in pairs_batch_loader:
+    for data in tqdm.tqdm(pairs_batch_loader):
         data = map(corpus.get, data)
         batch = (
             make_batch(model.embedding_layer, data[0][0]),
             make_batch(model.embedding_layer, data[1][0])
         )
+	batch = [x.cuda() for x in batch]
+	batch = (Variable(batch[0], volatile=True), Variable(batch[1], volatile=True))
 
         # embed code and NL
         repr_left = model(batch[0])
         repr_right = model(batch[1])
         # accumulate for evaluation
-        code.extend(repr_left.numpy())
-        nl.extend(repr_right.numpy())
+        code.extend(repr_left.cpu().data.numpy())
+        nl.extend(repr_right.cpu().data.numpy())
 
     code = np.array(code)
     nl = np.array(nl)
