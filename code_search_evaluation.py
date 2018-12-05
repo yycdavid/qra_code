@@ -69,7 +69,7 @@ def evaluate(
     code = np.array(code)
     nl = np.array(nl)
 
-    sim_mat = cosine_similarity(code, nl)
+    sim_mat = cosine_similarity(nl, code)
     ans_locs = location_of_correct(sim_mat)
 
     summary = {}
