@@ -31,8 +31,9 @@ def train(iter_cnt, model, domain_d, corpus, args, optimizer_encoder, optimizer_
     pos_file_path = "{}.pos.txt".format(args.train)
     neg_file_path = "{}.neg.txt".format(args.train)
 
-    train_corpus_path = os.path.dirname(args.train) + "/corpus.tsv.gz"
-    cross_train_corpus_path = os.path.dirname(args.cross_train) + "/corpus.tsv.gz"
+    # for adversarial training just use natural language portions of inputs
+    train_corpus_path = os.path.dirname(args.train) + "/nl.tsv.gz"
+    cross_train_corpus_path = os.path.dirname(args.cross_train) + "/nl.tsv.gz"
 
     use_content = False
     if args.use_content:
