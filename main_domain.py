@@ -31,8 +31,9 @@ def train(iter_cnt, model, domain_d, corpus, args, optimizer_encoder, optimizer_
     pos_file_path = "{}.pos.txt".format(args.train)
     neg_file_path = "{}.neg.txt".format(args.train)
 
-    train_corpus_path = os.path.dirname(args.train) + "/corpus.tsv.gz"
-    cross_train_corpus_path = os.path.dirname(args.cross_train) + "/corpus.tsv.gz"
+    # for adversarial training just use natural language portions of inputs
+    train_corpus_path = os.path.dirname(args.train) + "/nl.tsv.gz"
+    cross_train_corpus_path = os.path.dirname(args.cross_train) + "/nl.tsv.gz"
 
     use_content = False
     if args.use_content:
@@ -251,7 +252,9 @@ def main(args):
 
     args.run_id = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     root_dir = os.path.dirname(os.path.realpath(__file__))
-    args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
+    # only use generated run_path if none provided by user
+    if args.run_path is None:
+        args.run_path = os.path.join(root_dir, args.run_dir, args.run_id)
     if not os.path.exists(args.run_path):
         os.makedirs(args.run_path)
 
@@ -261,7 +264,7 @@ def main(args):
 
     outputManager.say(args)
 
-    
+
     outputManager.say("\nRun ID: {}\nRun Path: {}\n\n".format(
         args.run_id,
         args.run_path
@@ -325,13 +328,14 @@ def main(args):
         outputManager.say("\n")
 
     if args.save_model:
-        torch.save(model.state_dict(), args.save_model) 
-
+        torch.save(model.state_dict(), args.save_model)
+        torch.save(model, args.save_model + '-complete')
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(sys.argv[0], conflict_handler='resolve')
     argparser.add_argument("--cuda", action="store_true")
     argparser.add_argument("--run_dir",  type=str, default="/D/home/tao/mnt/ASAPPNAS/tao/test")
+    argparser.add_argument("--run_path", type=str, default=None)
     argparser.add_argument("--model", type=str, required=True, help="which model class to use")
     argparser.add_argument("--embedding", "--emb", type=str, help="path of embedding")
     argparser.add_argument("--train", type=str, required=True, help="training file")
